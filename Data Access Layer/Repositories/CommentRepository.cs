@@ -1,4 +1,4 @@
-﻿namespace Data_Access_Layer.Services
+﻿namespace Data_Access_Layer.Repositories
 {
     using System;
     using System.Collections.Generic;
@@ -6,10 +6,11 @@
     using System.Text;
     using System.Threading.Tasks;
     using Data_Access_Layer.Context;
+    using Data_Access_Layer.Interfaces;
     using Microsoft.EntityFrameworkCore;
     using Models;
 
-    public class CommentRepository
+    public class CommentRepository : IGenericRepository<Comment>
     {
         private readonly DataContext context;
 
@@ -62,7 +63,7 @@
             }
         }
 
-        public async Task<Comment> GetByIdAsync(int id)
+        public async Task<Comment> GetByIdAsync(string id)
         {
             try
             {

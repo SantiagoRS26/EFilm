@@ -8,15 +8,19 @@
 
     public class Comment
     {
-        public int CommentID { get; set; }
+        public int CommentId { get; set; }
 
+        public string UserId { get; set; }
+
+        public ApplicationUser User { get; set; }
+        
         public string? CommentText { get; set; }
 
         public int Qualification { get; set; }
 
         public DateTime CommentDate { get; set; }
 
-        public int MovieID { get; set; }
+        public int MovieId { get; set; }
 
         public Movie? Movies { get; set; }
 

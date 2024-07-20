@@ -8,11 +8,11 @@
 
     public class Gender
     {
-        public int GenderID { get; set; }
+        public string GenderId { get; set; }
 
         public string? Name { get; set; }
 
-        public ICollection<Movie>? Movies { get; set; }
+        public ICollection<Movie> Movies { get; set; }
 
     }
 }

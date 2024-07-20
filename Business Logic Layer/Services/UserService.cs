@@ -11,39 +11,39 @@
 
     public class UserService : IUserService
     {
-        private readonly IGenericRepository<User> userRepository;
+        private readonly IGenericRepository<ApplicationUser> userRepository;
 
-        public UserService(IGenericRepository<User> userRepository)
+        public UserService(IGenericRepository<ApplicationUser> userRepository)
         {
             this.userRepository = userRepository;
         }
 
-        public Task<User> CreateUserAsync(User user)
+        public Task<ApplicationUser> CreateUserAsync(ApplicationUser user)
         {
             throw new NotImplementedException();
         }
 
-        public Task<User> DeleteUserAsync(int id)
+        public Task<ApplicationUser> DeleteUserAsync(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<User>> GetAllUsersAsync()
+        public Task<IEnumerable<ApplicationUser>> GetAllUsersAsync()
         {
             throw new NotImplementedException();
         }
 
-        public Task<User> GetUserByEmailAsync(string email)
+        public Task<ApplicationUser> GetUserByEmailAsync(string email)
         {
             throw new NotImplementedException();
         }
 
-        public Task<User> GetUserByIdAsync(int id)
+        public Task<ApplicationUser> GetUserByIdAsync(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<User> UpdateUserAsync(User user)
+        public Task<ApplicationUser> UpdateUserAsync(ApplicationUser user)
         {
             throw new NotImplementedException();
         }

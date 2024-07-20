@@ -1,4 +1,4 @@
-﻿namespace Data_Access_Layer.Services
+﻿namespace Data_Access_Layer.Repositories
 {
     using System;
     using System.Collections.Generic;
@@ -10,7 +10,7 @@
     using Microsoft.EntityFrameworkCore;
     using Models;
 
-    public class UserRepository : IGenericRepository<User>
+    public class UserRepository : IGenericRepository<ApplicationUser>
     {
         private readonly DataContext context;
 
@@ -19,7 +19,7 @@
             this.context = context;
         }
 
-        public async Task<User> CreateAsync(User newUser)
+        public async Task<ApplicationUser> CreateAsync(ApplicationUser newUser)
         {
             try
             {
@@ -38,7 +38,7 @@
         {
             try
             {
-                User? userToDelete = await this.context.Users.FindAsync(id);
+                ApplicationUser? userToDelete = await this.context.Users.FindAsync(id);
                 this.context.Remove(userToDelete);
                 await this.context.SaveChangesAsync();
 
@@ -51,11 +51,11 @@
             }
         }
 
-        public Task<IQueryable<User>> GetAll()
+        public Task<IQueryable<ApplicationUser>> GetAll()
         {
             try
             {
-                IQueryable<User> users = this.context.Users;
+                IQueryable<ApplicationUser> users = this.context.Users;
                 return Task.FromResult(users);
             }
             catch (Exception ex)
@@ -64,11 +64,11 @@
             }
         }
 
-        public async Task<User> GetByIdAsync(int id)
+        public async Task<ApplicationUser> GetByIdAsync(string id)
         {
             try
             {
-                User? user = await this.context.Users.FindAsync(id);
+                ApplicationUser? user = await this.context.Users.FindAsync(id);
                 return user;
             }
             catch (Exception ex)
@@ -77,7 +77,7 @@
             }
         }
 
-        public async Task<User> UpdateAsync(User userUpdated)
+        public async Task<ApplicationUser> UpdateAsync(ApplicationUser userUpdated)
         {
             try
             {

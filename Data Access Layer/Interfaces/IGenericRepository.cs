@@ -11,7 +11,7 @@
     {
         Task<IQueryable<TEntityModel>> GetAll();
 
-        Task<TEntityModel> GetByIdAsync(int id);
+        Task<TEntityModel> GetByIdAsync(string id);
 
         Task<TEntityModel> CreateAsync(TEntityModel entity);
 

@@ -5,10 +5,12 @@
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Identity;
+    using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore;
     using Models;
 
-    public class DataContext : DbContext
+    public class DataContext : IdentityDbContext<ApplicationUser>
     {
         public DataContext(DbContextOptions options)
             : base(options)
@@ -21,17 +23,20 @@
 
         public DbSet<Gender> Genders { get; set; }
 
-        public DbSet<User> Users { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>()
-                .HasIndex(u => u.Email)
-                .IsUnique();
+            base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Gender>()
                 .HasIndex(g => g.Name)
                 .IsUnique();
+
+            modelBuilder.Entity<RefreshToken>()
+                .HasOne(rt => rt.User)
+                .WithMany(u => u.RefreshTokens)
+                .HasForeignKey(rt => rt.UserId);
         }
     }
 }

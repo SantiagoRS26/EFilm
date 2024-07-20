@@ -9,16 +9,16 @@
 
     public interface IUserService
     {
-        Task<IEnumerable<User>> GetAllUsersAsync();
+        Task<IEnumerable<ApplicationUser>> GetAllUsersAsync();
 
-        Task<User> CreateUserAsync(User user);
+        Task<ApplicationUser> CreateUserAsync(ApplicationUser user);
 
-        Task<User> GetUserByIdAsync(int id);
+        Task<ApplicationUser> GetUserByIdAsync(int id);
 
-        Task<User> GetUserByEmailAsync(string email);
+        Task<ApplicationUser> GetUserByEmailAsync(string email);
 
-        Task<User> UpdateUserAsync(User user);
+        Task<ApplicationUser> UpdateUserAsync(ApplicationUser user);
 
-        Task<User> DeleteUserAsync(int id);
+        Task<ApplicationUser> DeleteUserAsync(int id);
     }
 }

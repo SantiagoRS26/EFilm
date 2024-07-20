@@ -1,4 +1,4 @@
-﻿namespace Data_Access_Layer.Services
+﻿namespace Data_Access_Layer.Repositories
 {
     using System;
     using System.Collections.Generic;
@@ -10,11 +10,11 @@
     using Microsoft.EntityFrameworkCore;
     using Models;
 
-    public class MovieService : IGenericRepository<Movie>
+    public class MovieRepository : IMovieRepository
     {
         private readonly DataContext context;
 
-        public MovieService(DataContext context)
+        public MovieRepository(DataContext context)
         {
             this.context = context;
         }
@@ -63,7 +63,7 @@
             }
         }
 
-        public async Task<Movie> GetByIdAsync(int id)
+        public async Task<Movie> GetByIdAsync(string id)
         {
             try
             {
@@ -87,6 +87,22 @@
             catch (Exception ex)
             {
                 throw new Exception("Unexpected error occurred while updating movie", ex);
+            }
+        }
+
+        public async Task<List<Movie>> SearchMoviesAsync(string searchTerm)
+        {
+            try
+            {
+                IEnumerable<Movie> movies = await this.context.Movies
+                    .Where(m => m.Title.Contains(searchTerm) || m.Description.Contains(searchTerm))
+                    .ToListAsync();
+
+                return movies.ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error searching for movies", ex);
             }
         }
     }
