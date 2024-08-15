@@ -6,13 +6,61 @@
     using System.Text;
     using System.Threading.Tasks;
     using Business_Logic_Layer.Interfaces;
+    using Data_Access_Layer.Interfaces;
+    using Data_Access_Layer.Repositories;
     using Models;
 
     public class CommentService : ICommentService
     {
-        public Task AddCommentAsync(Comment comment)
+        private readonly IGenericRepository<Comment> commentRepository;
+
+        public CommentService(IGenericRepository<Comment> commentRepository)
         {
-            throw new NotImplementedException();
+            this.commentRepository = commentRepository;
+        }
+
+        public async Task<Comment> CreateCommentAsync(Comment newComment, string userId)
+        {
+            newComment.UserId = userId;
+            return await commentRepository.CreateAsync(newComment);
+        }
+
+        public async Task<bool> DeleteCommentAsync(int id, string userId)
+        {
+            var comment = await commentRepository.GetByIdAsync(id.ToString());
+
+            if (comment == null || comment.UserId != userId)
+            {
+                return false;
+            }
+
+            return await commentRepository.DeleteAsync(id);
+        }
+
+        public async Task<Comment> GetCommentByIdAsync(int id)
+        {
+            return await commentRepository.GetByIdAsync(id.ToString());
+        }
+
+        public async Task<Comment> UpdateCommentAsync(Comment updatedComment, string userId)
+        {
+            var existingComment = await commentRepository.GetByIdAsync(updatedComment.CommentId.ToString());
+
+            if (existingComment == null || existingComment.UserId != userId)
+            {
+                return null;
+            }
+
+            existingComment.CommentText = updatedComment.CommentText;
+            existingComment.Qualification = updatedComment.Qualification;
+
+            return await commentRepository.UpdateAsync(existingComment);
+        }
+
+        public async Task<IEnumerable<Comment>> GetCommentsByMovieIdAsync(int movieId)
+        {
+            var comments = await commentRepository.GetAll();
+            return comments.Where(c => c.MovieId == movieId).ToList();
         }
     }
 }

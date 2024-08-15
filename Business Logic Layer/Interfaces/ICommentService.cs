@@ -9,6 +9,14 @@
 
     public interface ICommentService
     {
-        Task AddCommentAsync(Comment comment);
+        Task<Comment> CreateCommentAsync(Comment newComment, string userId);
+
+        Task<bool> DeleteCommentAsync(int id, string userId);
+
+        Task<Comment> GetCommentByIdAsync(int id);
+
+        Task<Comment> UpdateCommentAsync(Comment updatedComment, string userId);
+
+        Task<IEnumerable<Comment>> GetCommentsByMovieIdAsync(int movieId);
     }
 }
