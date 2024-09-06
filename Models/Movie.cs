@@ -22,9 +22,7 @@
 
         public string? Duration { get; set; }
 
-        public string  GenderId { get; set; }
-
-        public Gender? Gender { get; set; }
+        public ICollection<MovieGender> MovieGenders { get; set; }
 
         public ICollection<Comment>? Comments { get; set; }
 

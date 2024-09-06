@@ -25,6 +25,8 @@
 
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
+        public DbSet<MovieGender> MovieGenders { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -37,6 +39,9 @@
                 .HasOne(rt => rt.User)
                 .WithMany(u => u.RefreshTokens)
                 .HasForeignKey(rt => rt.UserId);
+
+            modelBuilder.Entity<MovieGender>()
+                .HasKey(mg => new { mg.MovieId, mg.GenderId });
         }
     }
 }

@@ -20,11 +20,14 @@
 
         private readonly IMovieRepository movieRepository;
 
-        public MovieService(HttpClient httpClient, IExternalMovieService externalMovieService, IMovieRepository movieRepository)
+        private readonly IGenderService genderService;
+
+        public MovieService(HttpClient httpClient, IExternalMovieService externalMovieService, IMovieRepository movieRepository, IGenderService genderService)
         {
             this.httpClient = httpClient;
             this.externalMovieService = externalMovieService;
             this.movieRepository = movieRepository;
+            this.genderService = genderService;
         }
 
         public Task<Movie> CreateMovieAsync(Movie movie)
@@ -44,7 +47,7 @@
 
         public async Task<Movie> GetMovieByIdAsync(string id)
         {
-            var movie = await this.movieRepository.GetByIdAsync(id);
+            Movie movie = await this.movieRepository.GetByIdAsync(id);
 
             if (movie != null)
             {
@@ -53,27 +56,54 @@
 
             ExternalMovieDTO externalMovie = await this.externalMovieService.GetMovieByIdAsync(id.ToString());
 
-            if (externalMovie != null)
+            if (externalMovie == null)
             {
-                return new Movie
-                {
-                    MovieId = externalMovie.imdbID,
-                    Title = externalMovie.Title,
-                    Description = externalMovie.Plot,
-                    Director = externalMovie.Director,
-                    Poster = externalMovie.Poster,
-                    ReleaseDate = externalMovie.Year,
-                    Duration = externalMovie.Runtime,
-                    Gender = new Gender
-                    {
-                        GenderId = "1",
-                        Name = externalMovie.Genre,
-                    },
-                };
+                return null;
             }
 
-            return null;
+            var newMovie = new Movie
+            {
+                MovieId = externalMovie.imdbID,
+                Title = externalMovie.Title,
+                Description = externalMovie.Plot,
+                Director = externalMovie.Director,
+                Poster = externalMovie.Poster,
+                ReleaseDate = externalMovie.Year,
+                Duration = externalMovie.Runtime,
+            };
+
+            var genres = externalMovie.Genre.Split(", ")
+                                                .Select(g => g.Trim())
+                                                .ToList();
+            foreach (var genreName in genres)
+            {
+                var existingGender = await this.genderService.GetGenderByNameAsync(genreName);
+
+                Gender gender;
+
+                if (existingGender == null)
+                {
+                    gender = existingGender;
+                }
+                else
+                {
+                    gender = new Gender
+                    {
+                        GenderId = Guid.NewGuid().ToString(),
+                        Name = genreName,
+                    };
+                }
+
+                newMovie.MovieGenders.Add(new MovieGender
+                {
+                    Movie = newMovie,
+                    Gender = gender,
+                });
+            }
+
+            return newMovie;
         }
+
 
         public async Task<List<Movie>> SearchMoviesAsync(string searchTerm)
         {

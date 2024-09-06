@@ -18,12 +18,14 @@ builder.Services.AddScoped<IGenericRepository<ApplicationUser>, UserRepository>(
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
 builder.Services.AddScoped<IGenericRepository<Gender>, GenderRepository>();
 builder.Services.AddScoped<IGenericRepository<Comment>, CommentRepository>();
+builder.Services.AddScoped<IGenderRepository, GenderRepository>();
 
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IExternalMovieService, ExternalMovieService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IGenderService, GenderService>();
 
 builder.Services.AddHttpClient();
 
@@ -33,6 +35,18 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Add CORS
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        });
+});
 
 // Add context
 builder.Services.AddDbContext<DataContext>(options =>
@@ -104,6 +118,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -22,29 +22,29 @@
         public async Task<Comment> CreateCommentAsync(Comment newComment, string userId)
         {
             newComment.UserId = userId;
-            return await commentRepository.CreateAsync(newComment);
+            return await this.commentRepository.CreateAsync(newComment);
         }
 
         public async Task<bool> DeleteCommentAsync(int id, string userId)
         {
-            var comment = await commentRepository.GetByIdAsync(id.ToString());
+            var comment = await this.commentRepository.GetByIdAsync(id.ToString());
 
             if (comment == null || comment.UserId != userId)
             {
                 return false;
             }
 
-            return await commentRepository.DeleteAsync(id);
+            return await this.commentRepository.DeleteAsync(id);
         }
 
         public async Task<Comment> GetCommentByIdAsync(int id)
         {
-            return await commentRepository.GetByIdAsync(id.ToString());
+            return await this.commentRepository.GetByIdAsync(id.ToString());
         }
 
         public async Task<Comment> UpdateCommentAsync(Comment updatedComment, string userId)
         {
-            var existingComment = await commentRepository.GetByIdAsync(updatedComment.CommentId.ToString());
+            var existingComment = await this.commentRepository.GetByIdAsync(updatedComment.CommentId.ToString());
 
             if (existingComment == null || existingComment.UserId != userId)
             {
@@ -54,12 +54,12 @@
             existingComment.CommentText = updatedComment.CommentText;
             existingComment.Qualification = updatedComment.Qualification;
 
-            return await commentRepository.UpdateAsync(existingComment);
+            return await this.commentRepository.UpdateAsync(existingComment);
         }
 
         public async Task<IEnumerable<Comment>> GetCommentsByMovieIdAsync(int movieId)
         {
-            var comments = await commentRepository.GetAll();
+            var comments = await this.commentRepository.GetAll();
             return comments.Where(c => c.MovieId == movieId).ToList();
         }
     }

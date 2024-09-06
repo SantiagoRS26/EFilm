@@ -10,7 +10,7 @@
     using Microsoft.EntityFrameworkCore;
     using Models;
 
-    public class GenderRepository : IGenericRepository<Gender>
+    public class GenderRepository : IGenderRepository
     {
         private readonly DataContext context;
 
@@ -87,6 +87,18 @@
             catch (Exception ex)
             {
                 throw new Exception("Unexpected error occurred while updating gender", ex);
+            }
+        }
+
+        public async Task<Gender?> GetByNameAsync(string name)
+        {
+            try
+            {
+                return await this.context.Genders.FirstOrDefaultAsync(g => g.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error fetching gender by name from database", ex);
             }
         }
     }

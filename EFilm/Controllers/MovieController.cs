@@ -17,7 +17,6 @@
         }
 
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> SearchMoviesAsync(string query)
         {
             var movies = await this.movieService.SearchMoviesAsync(query);

@@ -12,7 +12,7 @@
 
         public string? Name { get; set; }
 
-        public ICollection<Movie> Movies { get; set; }
+        public ICollection<MovieGender> MovieGenders { get; set; }
 
     }
 }
