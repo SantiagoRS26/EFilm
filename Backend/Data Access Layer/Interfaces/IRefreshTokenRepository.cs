@@ -9,7 +9,7 @@
 
     public interface IRefreshTokenRepository
     {
-        Task<RefreshToken> GetRefreshTokenByTokenAsync(string token);
+        Task<RefreshToken> GetRefreshTokenByTokenHashAsync(string tokenHash);
 
         Task AddRefreshTokenAsync(RefreshToken refreshToken);
 

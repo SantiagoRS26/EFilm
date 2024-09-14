@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using Models;
 using EFilm.Models;
+using Models.DTO;
 
 namespace EFilm.Controllers
 {
@@ -31,13 +32,13 @@ namespace EFilm.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
-            var token = await this.authService.LoginAsync(model);
-            if (token != null)
+            var (accessToken, refreshToken) = await this.authService.LoginAsync(model);
+            if (accessToken != null)
             {
-                return this.Ok(new { token });
+                return this.Ok(new { AccessToken = accessToken, RefreshToken = refreshToken });
             }
 
-            return this.Unauthorized();
+            return this.Unauthorized("Invalid credentials");
         }
 
         [HttpGet("external-login/{provider}")]
@@ -61,15 +62,29 @@ namespace EFilm.Controllers
         }
 
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] string token)
+        public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest model)
         {
-            var (newJwtToken, newRefreshToken) = await this.authService.RefreshTokenAsync(token);
-            if (newJwtToken == null)
+            var (newAccessToken, newRefreshToken) = await this.authService.RefreshTokenAsync(model.RefreshToken);
+
+            if (newAccessToken == null)
             {
-                return this.Unauthorized(new { message = "Invalid token" });
+                return this.Unauthorized(newRefreshToken);
             }
 
-            return this.Ok(new { token = newJwtToken, refreshToken = newRefreshToken });
+            return this.Ok(new { AccessToken = newAccessToken, RefreshToken = newRefreshToken });
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterModel model)
+        {
+            var (success, accessToken, refreshToken, errorMessage) = await this.authService.RegisterAsync(model);
+
+            if (success)
+            {
+                return this.Ok(new { AccessToken = accessToken, RefreshToken = refreshToken });
+            }
+
+            return this.BadRequest(new { Error = errorMessage });
         }
     }
 }

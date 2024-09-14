@@ -1,11 +1,10 @@
-import { Login } from "@/pages/Login.page";
+import React from "react";
 import { MovieList } from "@/pages/MovieList.page";
-
 
 export default function Home() {
   return (
     <div className="bg-white">
-      <Login/>
+      <MovieList/>
     </div>
   );
 }

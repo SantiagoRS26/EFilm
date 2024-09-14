@@ -33,28 +33,52 @@
             this.refreshTokenRepository = refreshTokenRepository;
         }
 
-        public async Task<string> LoginAsync(LoginModel model)
+        public async Task<(string AccessToken, string RefreshToken)> LoginAsync(LoginModel model)
         {
-            var user = await this.userManager.FindByEmailAsync(model.UserNameOrEmail);
-            if (user == null)
-            {
-                user = await this.userManager.FindByNameAsync(model.UserNameOrEmail);
-            }
+            var user = await this.userManager.FindByEmailAsync(model.UserNameOrEmail) ??
+                       await this.userManager.FindByNameAsync(model.UserNameOrEmail);
 
             if (user != null && await this.userManager.CheckPasswordAsync(user, model.Password))
             {
-                var token = GenerateJwtToken(user);
-                var refreshToken = GenerateRefreshToken();
-                refreshToken.UserId = user.Id;
+                var accessToken = this.GenerateJwtToken(user);
+                var (refreshToken, tokenHash) = this.GenerateRefreshToken();
 
-                await this.refreshTokenRepository.AddRefreshTokenAsync(refreshToken);
-                await this.refreshTokenRepository.SaveChangesAsync();
+                var refreshTokenEntity = new RefreshToken
+                {
+                    TokenHash = tokenHash,
+                    UserId = user.Id,
+                    Expires = DateTime.UtcNow.AddDays(7),
+                    Created = DateTime.UtcNow
+                };
 
-                return token;
+                await refreshTokenRepository.AddRefreshTokenAsync(refreshTokenEntity);
+                await refreshTokenRepository.SaveChangesAsync();
+
+                return (accessToken, refreshToken);
             }
 
-            return null;
+            return (null, null);
         }
+
+
+        private (string Token, string TokenHash) GenerateRefreshToken()
+        {
+            var randomBytes = RandomNumberGenerator.GetBytes(64);
+            var refreshToken = Convert.ToBase64String(randomBytes);
+            var tokenHash = this.ComputeHash(refreshToken);
+            return (refreshToken, tokenHash);
+        }
+
+        private string ComputeHash(string input)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                var bytes = Encoding.UTF8.GetBytes(input);
+                var hashBytes = sha256.ComputeHash(bytes);
+                return Convert.ToBase64String(hashBytes);
+            }
+        }
+
 
         private string GenerateJwtToken(ApplicationUser user)
         {
@@ -75,16 +99,6 @@
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        private RefreshToken GenerateRefreshToken()
-        {
-            return new RefreshToken
-            {
-                Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
-                Expires = DateTime.UtcNow.AddDays(7),
-                Created = DateTime.UtcNow
-            };
         }
 
         public async Task<(bool, string)> ExternalLoginCallbackAsync(string returnUrl = null, string remoteError = null)
@@ -153,7 +167,7 @@
             }
         }
 
-        public async Task<(bool, string)> RegisterAsync(RegisterModel model)
+        public async Task<(bool Success, string AccessToken, string RefreshToken, string ErrorMessage)> RegisterAsync(RegisterModel model)
         {
             var user = new ApplicationUser
             {
@@ -164,38 +178,59 @@
                 ProfilePicturePath = model.ProfilePicturePath
             };
 
-            var result = await this.userManager.CreateAsync(user, model.Password);
+            var result = await userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)
             {
-                var token = await this.LoginAsync(new LoginModel { UserNameOrEmail = model.Email, Password = model.Password });
-                return (true, token);
+                var (accessToken, refreshToken) = await LoginAsync(new LoginModel { UserNameOrEmail = model.Email, Password = model.Password });
+
+                if (accessToken != null)
+                {
+                    return (true, accessToken, refreshToken, null);
+                }
+                else
+                {
+                    return (false, null, null, "Error during login after registration.");
+                }
             }
 
             var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            return (false, errors);
+            return (false, null, null, errors);
         }
 
-        public async Task<(string, string)> RefreshTokenAsync(string token)
+
+        public async Task<(string AccessToken, string RefreshToken)> RefreshTokenAsync(string token)
         {
-            var refreshToken = await this.refreshTokenRepository.GetRefreshTokenByTokenAsync(token);
+            var tokenHash = this.ComputeHash(token);
+            var refreshToken = await this.refreshTokenRepository.GetRefreshTokenByTokenHashAsync(tokenHash);
 
             if (refreshToken == null || !refreshToken.IsActive)
             {
                 return (null, "Invalid token");
             }
 
-            var user = await this.userManager.FindByIdAsync(refreshToken.UserId);
+            var user = refreshToken.User;
 
-            var newJwtToken = GenerateJwtToken(user);
-            var newRefreshToken = GenerateRefreshToken();
-            newRefreshToken.UserId = user.Id;
+            var newAccessToken = GenerateJwtToken(user);
+            var (newRefreshToken, newTokenHash) = GenerateRefreshToken();
 
+            // Revoca el token anterior
             await this.refreshTokenRepository.RevokeRefreshTokenAsync(refreshToken);
-            await this.refreshTokenRepository.AddRefreshTokenAsync(newRefreshToken);
+
+            // Almacena el nuevo refresh token
+            var newRefreshTokenEntity = new RefreshToken
+            {
+                TokenHash = newTokenHash,
+                UserId = user.Id,
+                Expires = DateTime.UtcNow.AddDays(7),
+                Created = DateTime.UtcNow,
+            };
+
+            await this.refreshTokenRepository.AddRefreshTokenAsync(newRefreshTokenEntity);
             await this.refreshTokenRepository.SaveChangesAsync();
 
-            return (newJwtToken, newRefreshToken.Token);
+            return (newAccessToken, newRefreshToken);
         }
+
     }
 }

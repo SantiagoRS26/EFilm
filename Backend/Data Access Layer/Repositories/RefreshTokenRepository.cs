@@ -19,9 +19,9 @@
             this.context = context;
         }
 
-        public async Task<RefreshToken> GetRefreshTokenByTokenAsync(string token)
+        public async Task<RefreshToken> GetRefreshTokenByTokenHashAsync(string tokenHash)
         {
-            return await this.context.RefreshTokens.SingleOrDefaultAsync(rt => rt.Token == token);
+            return await this.context.RefreshTokens.Include(rt => rt.User).FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash);
         }
 
         public async Task AddRefreshTokenAsync(RefreshToken refreshToken)

@@ -1,39 +1,53 @@
-export class HttpClient{
-    async get<T>(url: string): Promise<T>{
-        try{
-            const response = await fetch(url);
+import { HttpError } from "@/shared/utils/HttpError";
 
-            if(!response.ok){
-                throw new Error("Failed to fetch data");
-            }
-
-            return await response.json() as T;
-        }catch(error){
-            console.error("Error fetching data:", error);
-            throw new Error("Error fetching data");
+export class HttpClient {
+    async get<T>(url: string, accessToken?: string): Promise<T> {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        const response = await fetch(`${apiUrl}${url}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+          },
+          credentials: 'include', // Para enviar cookies si es necesario
+        });
+  
+        if (!response.ok) {
+          throw new HttpError(`Error en la solicitud GET: ${response.statusText}`, response.status);
         }
+  
+        return (await response.json()) as T;
+      } catch (error) {
+        console.error('Error en GET:', error);
+        throw error;
+      }
     }
-
-    async post<T>(url: string, body: any): Promise<T>{
-        try{
-            const response = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(body),
-            });
-
-            if(!response.ok){
-                throw new Error("Failed to post data");
-            }
-
-            return await response.json() as T;
-        }catch(error){
-            console.error("Error posting data:", error);
-            throw new Error("Error posting data");
+  
+    async post<T>(url: string, body: any, accessToken?: string): Promise<T> {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        const response = await fetch(`${apiUrl}${url}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+          },
+          body: JSON.stringify(body),
+          credentials: 'include',
+        });
+  
+        if (!response.ok) {
+          throw new HttpError(`Error en la solicitud POST: ${response.statusText}`, response.status);
         }
+  
+        return (await response.json()) as T;
+      } catch (error) {
+        console.error('Error en POST:', error);
+        throw error;
+      }
     }
-}
-
-export const httpClient = new HttpClient();
+  }
+  
+  export const httpClient = new HttpClient();
+  

@@ -12,12 +12,12 @@
 
     public interface IAuthService
     {
-        Task<string> LoginAsync(LoginModel model);
+        Task<(string AccessToken, string RefreshToken)> LoginAsync(LoginModel model);
 
         Task<(bool, string)> ExternalLoginCallbackAsync(string returnUrl, string remoteError);
 
-        Task<(bool, string)> RegisterAsync(RegisterModel model);
+        Task<(bool Success, string AccessToken, string RefreshToken, string ErrorMessage)> RegisterAsync(RegisterModel model);
 
-        Task<(string, string)> RefreshTokenAsync(string token);
+        Task<(string AccessToken, string RefreshToken)> RefreshTokenAsync(string token);
     }
 }
