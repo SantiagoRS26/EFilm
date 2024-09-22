@@ -44,7 +44,12 @@ namespace EFilm.Controllers
         [HttpGet("external-login/{provider}")]
         public IActionResult ExternalLogin(string provider, string returnUrl = null)
         {
-            var redirectUrl = this.Url.Action(nameof(this.ExternalLoginCallback), "Auth", new { returnUrl = "/" });
+            if (string.IsNullOrEmpty(returnUrl) || !Uri.IsWellFormedUriString(returnUrl,UriKind.Absolute))
+            {
+                return this.BadRequest("El returnUrl es requerido y debe ser una URL válida.");
+            }
+
+            var redirectUrl = this.Url.Action(nameof(this.ExternalLoginCallback), "Auth", new { returnUrl });
             var properties = this.signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return this.Challenge(properties, provider);
         }

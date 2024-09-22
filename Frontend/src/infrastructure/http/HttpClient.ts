@@ -10,7 +10,7 @@ export class HttpClient {
             'Content-Type': 'application/json',
             ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
           },
-          credentials: 'include', // Para enviar cookies si es necesario
+          credentials: 'include',
         });
   
         if (!response.ok) {

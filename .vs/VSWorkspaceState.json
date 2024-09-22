@@ -1,8 +1,10 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Backend"
+    "\\Backend",
+    "\\Backend\\EFilm",
+    "\\Backend\\EFilm\\Controllers"
   ],
-  "SelectedNode": "\\Backend\\EfilmProject.sln",
+  "SelectedNode": "\\Backend\\EFilm\\Controllers\\AuthController.cs",
   "PreviewInSolutionExplorer": false
 }

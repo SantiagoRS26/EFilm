@@ -4,12 +4,14 @@ import React, { createContext, useState, useContext, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { IAuthRepository } from "@/adapters/repositories/IAuthRepository";
 import { AuthRepository } from "@/infrastructure/api/AuthRepository";
+import { register } from "module";
 
 interface AuthContextType {
     isAuthenticated: boolean;
     accessToken: string | null;
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
+    register: (name: string, email: string, password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,11 +52,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
+    const register = async (name: string, email: string, password: string) => {
+        try {
+            const data = await authRepository.register(name, email, password);
+            setAccessToken(data.accessToken);
+            setIsAuthenticated(true);
+        } catch (error) {
+            console.error("Error al registrar:", error);
+            throw error;
+        }
+    };
+
     const value = {
         isAuthenticated,
         accessToken,
         login,
         logout,
+        register
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
