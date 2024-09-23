@@ -1,3 +1,4 @@
+using AspNetCoreRateLimit;
 using Business_Logic_Layer.Interfaces;
 using Business_Logic_Layer.Services;
 using Data_Access_Layer.Context;
@@ -21,7 +22,6 @@ builder.Services.AddScoped<IGenericRepository<Comment>, CommentRepository>();
 builder.Services.AddScoped<IGenderRepository, GenderRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
-builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IExternalMovieService, ExternalMovieService>();
@@ -85,6 +85,20 @@ builder.Services.AddAuthentication(options =>
             ValidAudience = builder.Configuration["Jwt:Issuer"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
         };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Cookies["accessToken"];
+                if (!string.IsNullOrEmpty(accessToken))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            },
+        };
     })
     .AddGoogle(options =>
     {
@@ -110,6 +124,23 @@ builder.Services.AddAuthentication(options =>
         options.AppSecret = facebookAuthNSection["AppSecret"];
     });
 
+// Rate Limiting
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(options =>
+{
+    options.GeneralRules = new List<RateLimitRule>
+    {
+        new RateLimitRule
+        {
+            Endpoint = "*:/api/auth/*",
+            Limit = 5,
+            Period = "1m",
+        },
+    };
+});
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -123,6 +154,14 @@ app.UseRouting();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseIpRateLimiting();
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Add("X-Frame-Options", "DENY");
+    context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
+    await next();
+});
 
 app.MapControllers();
 

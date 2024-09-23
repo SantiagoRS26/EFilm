@@ -9,6 +9,7 @@ using System.Text;
 using Models;
 using EFilm.Models;
 using Models.DTO;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EFilm.Controllers
 {
@@ -35,10 +36,23 @@ namespace EFilm.Controllers
             var (accessToken, refreshToken) = await this.authService.LoginAsync(model);
             if (accessToken != null)
             {
-                return this.Ok(new { AccessToken = accessToken, RefreshToken = refreshToken });
+                this.SetTokensAsCookies(accessToken, refreshToken);
+                return this.Ok(new { message = "Login successful" });
             }
 
             return this.Unauthorized("Invalid credentials");
+        }
+
+        [HttpGet("check")]
+        [Authorize]
+        public IActionResult CheckAuth()
+        {
+            if (this.User.Identity?.IsAuthenticated == true)
+            {
+                return this.Ok(new { isAuthenticated = true });
+            }
+
+            return this.Unauthorized(new { isAuthenticated = false });
         }
 
         [HttpGet("external-login/{provider}")]
@@ -57,9 +71,10 @@ namespace EFilm.Controllers
         [HttpGet("external-login-callback")]
         public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
         {
-            var (success, result) = await this.authService.ExternalLoginCallbackAsync(returnUrl, remoteError);
+            var (success, accessToken, refreshToken, result) = await this.authService.ExternalLoginCallbackAsync(returnUrl, remoteError);
             if (success)
             {
+                this.SetTokensAsCookies(accessToken, refreshToken);
                 return this.Redirect(result);
             }
 
@@ -67,16 +82,22 @@ namespace EFilm.Controllers
         }
 
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest model)
+        public async Task<IActionResult> RefreshToken()
         {
-            var (newAccessToken, newRefreshToken) = await this.authService.RefreshTokenAsync(model.RefreshToken);
-
-            if (newAccessToken == null)
+            var refreshToken = Request.Cookies["refreshToken"];
+            if (string.IsNullOrEmpty(refreshToken))
             {
-                return this.Unauthorized(newRefreshToken);
+                return this.Unauthorized("Refresh token is missing.");
             }
 
-            return this.Ok(new { AccessToken = newAccessToken, RefreshToken = newRefreshToken });
+            var (newAccessToken, newRefreshToken) = await this.authService.RefreshTokenAsync(refreshToken);
+            if (newAccessToken == null)
+            {
+                return this.Unauthorized("Invalid or expired refresh token.");
+            }
+
+            this.SetTokensAsCookies(newAccessToken, newRefreshToken);
+            return this.Ok(new { message = "Token refreshed" });
         }
 
         [HttpPost("register")]
@@ -86,10 +107,41 @@ namespace EFilm.Controllers
 
             if (success)
             {
-                return this.Ok(new { AccessToken = accessToken, RefreshToken = refreshToken });
+                this.SetTokensAsCookies(accessToken, refreshToken);
+                return this.Ok(new { message = "Registration successful" });
             }
 
             return this.BadRequest(new { Error = errorMessage });
+        }
+
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("accessToken");
+            Response.Cookies.Delete("refreshToken");
+            return this.Ok(new { message = "Logged out successfully" });
+        }
+
+        private void SetTokensAsCookies(string accessToken, string refreshToken)
+        {
+            var accessTokenCookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false, // Set to true in production
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddMinutes(30),
+            };
+
+            var refreshTokenCookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false, // Set to true in production
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddDays(7),
+            };
+
+            Response.Cookies.Append("accessToken", accessToken, accessTokenCookieOptions);
+            Response.Cookies.Append("refreshToken", refreshToken, refreshTokenCookieOptions);
         }
     }
 }

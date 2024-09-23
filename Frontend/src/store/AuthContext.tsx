@@ -1,14 +1,14 @@
 'use client';
 
-import React, { createContext, useState, useContext, ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { IAuthRepository } from "@/adapters/repositories/IAuthRepository";
 import { AuthRepository } from "@/infrastructure/api/AuthRepository";
-import { register } from "module";
+import { httpClient } from '@/infrastructure/http/HttpClient';
+import { publicRoutes } from "@/shared/utils/publicRoutes";
 
 interface AuthContextType {
     isAuthenticated: boolean;
-    accessToken: string | null;
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
     register: (name: string, email: string, password: string) => Promise<void>;
@@ -27,14 +27,42 @@ export const useAuth = (): AuthContextType => {
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const authRepository: IAuthRepository = new AuthRepository();
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-    const [accessToken, setAccessToken] = useState<string | null>(null);
     const router = useRouter();
+    const pathname = usePathname();
+
+    const isPublic = publicRoutes.some(
+        (path) => pathname === path || pathname.startsWith(`${path}/`)
+    );
+
+    // Establecer el callback de logout en HttpClient
+    useEffect(() => {
+        const handleLogout = async () => {
+            await logout(); // Manejar el logout cuando la renovación del token falle
+        };
+        httpClient.setLogoutCallback(handleLogout);
+    }, [isPublic]);
+
+    // Verificar la autenticación al montar el componente
+    useEffect(() => {
+        const checkAuthentication = async () => {
+            try {
+                const authenticated = await authRepository.checkAuth();
+                setIsAuthenticated(authenticated);
+            } catch {
+                setIsAuthenticated(false);
+                if (!isPublic) { // Solo redirigir si la ruta no es pública
+                    await logout();
+                }
+            }
+        };
+        checkAuthentication();
+    }, [isPublic]);
 
     const login = async (email: string, password: string) => {
         try {
-            const data = await authRepository.login(email, password);
-            setAccessToken(data.accessToken);
+            await authRepository.login(email, password);
             setIsAuthenticated(true);
+            router.push('/MovieList');
         } catch (error) {
             console.error("Error al iniciar sesión:", error);
             throw error;
@@ -44,9 +72,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const logout = async () => {
         try {
             await authRepository.logout();
-            setAccessToken(null);
             setIsAuthenticated(false);
-            router.replace("/login");
+            router.replace("/");
         } catch (error) {
             console.error("Error al cerrar sesión:", error);
         }
@@ -54,9 +81,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const register = async (name: string, email: string, password: string) => {
         try {
-            const data = await authRepository.register(name, email, password);
-            setAccessToken(data.accessToken);
+            await authRepository.register(name, email, password);
             setIsAuthenticated(true);
+            router.push('/');
         } catch (error) {
             console.error("Error al registrar:", error);
             throw error;
@@ -65,11 +92,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const value = {
         isAuthenticated,
-        accessToken,
         login,
         logout,
         register
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+};

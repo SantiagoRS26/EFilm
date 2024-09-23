@@ -8,6 +8,7 @@ import { Button } from "@/shared/components/Buttons/Button.component";
 import { FcGoogle } from "react-icons/fc";
 import { useAuth } from "@/store/AuthContext";
 import { useRouter } from "next/navigation";
+import GoogleLoginButton from "@/shared/components/Buttons/GoogleLoginButton";
 
 export default function Home() {
     const [email, setEmail] = useState("");
@@ -63,12 +64,7 @@ export default function Home() {
                     </span>
                     <hr className="w-full border-t border-gray-300" />
                 </div>
-                <button 
-                onClick={handleGoogleLogin}
-                className="flex items-center justify-center w-full py-2 px-4 border border-gray-300 rounded-full shadow-sm hover:shadow-lg transition-shadow duration-200 bg-white text-gray-500 font-medium">
-                    <FcGoogle className="w-7 h-7 mr-2" />
-                    Sign Up with Google
-                </button>
+                <GoogleLoginButton/>
             </div>
         </div>
     );

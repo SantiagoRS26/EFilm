@@ -14,7 +14,7 @@
     {
         Task<(string AccessToken, string RefreshToken)> LoginAsync(LoginModel model);
 
-        Task<(bool, string)> ExternalLoginCallbackAsync(string returnUrl, string remoteError);
+        Task<(bool Success, string AccessToken, string RefreshToken, string ReturnUrlOrError)> ExternalLoginCallbackAsync(string returnUrl = null, string remoteError = null);
 
         Task<(bool Success, string AccessToken, string RefreshToken, string ErrorMessage)> RegisterAsync(RegisterModel model);
 
