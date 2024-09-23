@@ -128,7 +128,7 @@ namespace EFilm.Controllers
             {
                 HttpOnly = true,
                 Secure = false, // Set to true in production
-                SameSite = SameSiteMode.None,
+                SameSite = SameSiteMode.Lax,
                 Expires = DateTime.UtcNow.AddMinutes(30),
             };
 
@@ -136,7 +136,7 @@ namespace EFilm.Controllers
             {
                 HttpOnly = true,
                 Secure = false, // Set to true in production
-                SameSite = SameSiteMode.None,
+                SameSite = SameSiteMode.Lax,
                 Expires = DateTime.UtcNow.AddDays(7),
             };
 

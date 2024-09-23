@@ -37,12 +37,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Establecer el callback de logout en HttpClient
     useEffect(() => {
         const handleLogout = async () => {
-            await logout(); // Manejar el logout cuando la renovación del token falle
+            if (!isPublic) { // Solo ejecutar logout si la ruta no es pública
+                await logout();
+            }
         };
         httpClient.setLogoutCallback(handleLogout);
     }, [isPublic]);
 
-    // Verificar la autenticación al montar el componente
     useEffect(() => {
         const checkAuthentication = async () => {
             try {
@@ -51,7 +52,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             } catch {
                 setIsAuthenticated(false);
                 if (!isPublic) { // Solo redirigir si la ruta no es pública
-                    await logout();
+                    await authRepository.logout(); // Ejecutar el logout solo en el repositorio, sin redirigir
+                    if (!isPublic) {
+                        router.replace("/"); // Redirigir solo si no es una ruta pública
+                    }
                 }
             }
         };

@@ -5,7 +5,7 @@ import { FcGoogle } from "react-icons/fc";
 const GoogleLoginButton: React.FC = () => {
     const handleGoogleLogin = () => {
         const returnUrl = encodeURIComponent(`${window.location.origin}/auth/callback`);
-        window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/external-login/google?returnUrl=${returnUrl}`;
+        window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/external-login/Google?returnUrl=${returnUrl}`;
       };
 
     return (

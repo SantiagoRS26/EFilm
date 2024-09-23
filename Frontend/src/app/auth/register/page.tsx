@@ -36,7 +36,7 @@ export default function RegisterPage() {
     }
 
     return (
-        <div className="w-full flex flex-col md:flex-row">
+        <div className="w-full flex flex-col-reverse md:flex-row">
             <div className="relative w-full md:w-1/2 h-screen flex justify-center pt-3 bg-gradient-to-b from-[#FFDEE9] to-[#B5FFFC]">
                 <Image
                     src="/images/undraw_horror_movie_3988.svg"
