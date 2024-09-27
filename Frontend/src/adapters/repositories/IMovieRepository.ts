@@ -1,6 +1,10 @@
-import { Movie } from "@/domain/Movie/Movie";
+import { MovieFilters } from "@/domain/dto/MovieFilters";
+import { MovieBasicInfo } from "@/domain/Movie/MovieBasicInfo";
+import { MovieDetail } from "@/domain/Movie/MovieDetail";
+import { PagedResult } from "@/domain/Movie/PagedResult";
 
 export interface IMovieRepository {
-    getAllMovies(): Promise<Movie[]>;
-    getMovieById(id: string): Promise<Movie | null>;
+    /* getAllMovies(): Promise<Movie[]>; */
+    getFilteredMovies(filters: MovieFilters, pageNumber?: number, pageSize?: number): Promise<PagedResult<MovieBasicInfo>>;
+    getMovieById(id: string): Promise<MovieDetail | null>;
 }

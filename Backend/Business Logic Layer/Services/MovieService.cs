@@ -9,6 +9,8 @@
     using Business_Logic_Layer.Interfaces;
     using Data_Access_Layer.Interfaces;
     using Data_Access_Layer.Repositories;
+    using DTO;
+    using Microsoft.EntityFrameworkCore;
     using Models;
     using Models.DTO;
 
@@ -20,14 +22,14 @@
 
         private readonly IMovieRepository movieRepository;
 
-        private readonly IGenderService genderService;
+        private readonly IGenreService GenreService;
 
-        public MovieService(HttpClient httpClient, IExternalMovieService externalMovieService, IMovieRepository movieRepository, IGenderService genderService)
+        public MovieService(HttpClient httpClient, IExternalMovieService externalMovieService, IMovieRepository movieRepository, IGenreService GenreService)
         {
             this.httpClient = httpClient;
             this.externalMovieService = externalMovieService;
             this.movieRepository = movieRepository;
-            this.genderService = genderService;
+            this.GenreService = GenreService;
         }
 
         public Task<Movie> CreateMovieAsync(Movie movie)
@@ -45,9 +47,104 @@
             throw new NotImplementedException();
         }
 
-        public async Task<Movie> GetMovieByIdAsync(string id)
+        public async Task<PagedResultDTO<MovieBasicInfoDTO>> GetFilteredMoviesAsync(string genreId, string keyword, DateTime? releaseDate, int pageNumber, int pageSize)
         {
-            Movie movie = await this.movieRepository.GetByIdAsync(id);
+            var query = this.movieRepository.GetMoviesQuery();
+
+            if (!string.IsNullOrEmpty(genreId))
+            {
+                query = query.Where(m => m.Genres.Any(g => g.GenreId == genreId));
+            }
+
+            if(!string.IsNullOrEmpty(keyword))
+            {
+                query = query.Where(m => m.Title.Contains(keyword) || m.Description.Contains(keyword));
+            }
+
+            if (releaseDate.HasValue)
+            {
+                query = query.Where(m => m.ReleaseDate == releaseDate);
+            }
+
+            var totalRecords = await query.CountAsync();
+
+            var baseImageUrl = "https://image.tmdb.org/t/p/w500";
+
+            var movies = await query
+                .OrderByDescending(m => m.Revenue)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(m => new MovieBasicInfoDTO
+                {
+                    MovieId = m.MovieId,
+                    Title = m.Title,
+                    PosterUrl = string.IsNullOrEmpty(m.Poster) ? null : $"{baseImageUrl}{m.Poster}",
+                    ReleaseDate = m.ReleaseDate,
+                }).ToListAsync();
+
+            return new PagedResultDTO<MovieBasicInfoDTO>
+            {
+                Items = movies,
+                TotalRecords = totalRecords,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+            };
+        }
+
+        public async Task<MovieDetailDTO> GetMovieByIdAsync(string id)
+        {
+            var movie = await this.movieRepository.GetByIdAsync(id);
+
+            if (movie == null)
+            {
+                return null;
+            }
+
+            var baseImageUrl = "https://image.tmdb.org/t/p/w500";
+
+            var movieDto = new MovieDetailDTO
+            {
+                MovieId = movie.MovieId,
+                Title = movie.Title,
+                Description = movie.Description,
+                Poster = string.IsNullOrEmpty(movie.Poster) ? null : $"{baseImageUrl}{movie.Poster}",
+                ReleaseDate = movie.ReleaseDate,
+                Duration = movie.Duration,
+                VoteAverage = movie.VoteAverage,
+                VoteCount = movie.VoteCount,
+                Revenue = movie.Revenue,
+                Budget = movie.Budget,
+                ImdbId = movie.ImdbId,
+                BackdropPath = movie.BackdropPath,
+                Tagline = movie.Tagline,
+                Genres = movie.Genres?.Select(g => new GenreDTO
+                {
+                    GenreId = g.GenreId,
+                    Name = g.Name,
+                }).ToList(),
+                Keywords = movie.Keywords?.Select(k => new KeywordDTO
+                {
+                    KeywordId = k.KeywordId,
+                    Name = k.Name,
+                }).ToList(),
+                Comments = movie.Comments?.Select(c => new CommentDTO
+                {
+                    CommentId = c.CommentId,
+                    UserId = c.UserId,
+                    CommentText = c.CommentText,
+                    Qualification = c.Qualification,
+                    CommentDate = c.CommentDate,
+                }).ToList(),
+                MovieLanguages = movie.MovieLanguages?.Select(ml => new MovieLanguageDTO
+                {
+                    MovieLanguageId = ml.MovieLanguageId,
+                    Language = ml.Language,
+                }).ToList(),
+            };
+
+            return movieDto;
+
+            /* Movie movie = await this.movieRepository.GetByIdAsync(id);
 
             if (movie != null)
             {
@@ -77,59 +174,64 @@
                                                 .ToList();
             foreach (var genreName in genres)
             {
-                var existingGender = await this.genderService.GetGenderByNameAsync(genreName);
+                var existingGenre = await this.GenreService.GetGenreByNameAsync(genreName);
 
-                Gender gender;
+                Genre Genre;
 
-                if (existingGender == null)
+                if (existingGenre == null)
                 {
-                    gender = existingGender;
+                    Genre = existingGenre;
                 }
                 else
                 {
-                    gender = new Gender
+                    Genre = new Genre
                     {
-                        GenderId = Guid.NewGuid().ToString(),
+                        GenreId = Guid.NewGuid().ToString(),
                         Name = genreName,
                     };
                 }
 
-                newMovie.MovieGenders.Add(new MovieGender
+                newMovie.MovieGenres.Add(new MovieGenre
                 {
                     Movie = newMovie,
-                    Gender = gender,
+                    Genre = Genre,
                 });
             }
 
             return newMovie;
+            */
         }
 
-
-        public async Task<List<Movie>> SearchMoviesAsync(string searchTerm)
+        public async Task<PagedResultDTO<MovieBasicInfoDTO>> SearchMoviesAsync(string searchTerm, int pageNumber, int pageSize)
         {
-            var movies = await this.movieRepository.SearchMoviesAsync(searchTerm);
-
-            if (movies.Any())
+            if (searchTerm.Contains(" "))
             {
-                return movies;
+                searchTerm = "\"" + searchTerm + "\"";
             }
 
-            MovieSearchResponseDTO externalMoviesResponse = await this.externalMovieService.SearchMoviesAsync(searchTerm);
+            var query = this.movieRepository.SearchMovies(searchTerm);
 
-            if (externalMoviesResponse != null && externalMoviesResponse.Response == "True")
-            {
-                var externalMovies = externalMoviesResponse.Search.Select(externalMovie => new Movie
+            var totalRecords = await query.CountAsync();
+
+            var movies = await query
+                .OrderByDescending(m => m.Revenue)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(m => new MovieBasicInfoDTO
                 {
-                    MovieId = externalMovie.imdbID,
-                    Title = externalMovie.Title,
-                    ReleaseDate = externalMovie.Year,
-                    Poster = externalMovie.Poster,
-                }).ToList();
+                    MovieId = m.MovieId,
+                    Title = m.Title,
+                    PosterUrl = m.Poster,
+                    ReleaseDate = m.ReleaseDate,
+                }).ToListAsync();
 
-                movies.AddRange(externalMovies);
-            }
-
-            return movies;
+            return new PagedResultDTO<MovieBasicInfoDTO>
+            {
+                Items = movies,
+                TotalRecords = totalRecords,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
 
         public Task<Movie> UpdateMovieAsync(Movie movie)

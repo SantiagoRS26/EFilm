@@ -17,9 +17,9 @@
         }
 
         [HttpGet]
-        public async Task<IActionResult> SearchMoviesAsync(string query)
+        public async Task<IActionResult> SearchMoviesAsync(string query, int pageNumber = 1, int pageSize = 10)
         {
-            var movies = await this.movieService.SearchMoviesAsync(query);
+            var movies = await this.movieService.SearchMoviesAsync(query, pageNumber, pageSize);
             return this.Ok(movies);
         }
 
@@ -33,6 +33,14 @@
             }
 
             return this.Ok(movie);
+        }
+
+        [HttpGet("filtered")]
+        public async Task<IActionResult> GetFilteredMoviesAsync(string? genreId, string? keyword, DateTime? releaseDate, int pageNumber = 1, int pageSize = 10)
+        {
+            var movies = await this.movieService.GetFilteredMoviesAsync(genreId, keyword, releaseDate, pageNumber, pageSize);
+
+            return this.Ok(movies);
         }
     }
 }

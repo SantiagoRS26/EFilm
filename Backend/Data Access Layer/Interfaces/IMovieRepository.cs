@@ -7,8 +7,19 @@
     using System.Threading.Tasks;
     using Models;
 
-    public interface IMovieRepository : IGenericRepository<Movie>
+    public interface IMovieRepository
     {
-        Task<List<Movie>> SearchMoviesAsync(string searchTerm);
+
+        //Task<IQueryable<Movie>> GetPagedMoviesAsync(int page, int pageSize);
+
+        IQueryable<Movie> GetMoviesQuery();
+
+        Task<Movie> GetByIdAsync(string id);
+
+        //Task<Movie> GetMovieByIdAsync(string id);
+
+        //Task<IQueryable<Movie>> GetFilteredMoviesAsync(string genreId, string keyword, DateTime? releaseDate, int page, int pageSize);
+
+        IQueryable<Movie> SearchMovies(string searchTerm);
     }
 }

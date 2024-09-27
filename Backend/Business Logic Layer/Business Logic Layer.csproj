@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Data Access Layer\Data Access Layer.csproj" />
+    <ProjectReference Include="..\DTO\DTO.csproj" />
     <ProjectReference Include="..\Models\Models.csproj" />
   </ItemGroup>
 

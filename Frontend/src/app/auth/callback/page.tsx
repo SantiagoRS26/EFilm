@@ -15,9 +15,11 @@ const CallbackPage: React.FC = () => {
     if (isAuthenticated) {
       router.replace("/MovieList");
     } else {
-      setTimeout(() => {
-        router.replace("/");
+      const timeout = setTimeout(() => {
+        router.replace("/auth/login");
       }, 3000);
+  
+      return () => clearTimeout(timeout);
     }
   }, [isAuthenticated, router]);
 

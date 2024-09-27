@@ -6,13 +6,12 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    public class Gender
+    public class Genre
     {
-        public string GenderId { get; set; }
+        public string GenreId { get; set; }
 
         public string? Name { get; set; }
 
-        public ICollection<MovieGender> MovieGenders { get; set; }
-
+        public ICollection<Movie>? Movies { get; set; }
     }
 }

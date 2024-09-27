@@ -7,8 +7,10 @@
     using System.Threading.Tasks;
     using Models;
 
-    public interface IGenderRepository : IGenericRepository<Gender>
+    public interface IGenreRepository
     {
-        Task<Gender?> GetByNameAsync(string name);
+        Task<Genre?> GetByNameAsync(string name);
+
+        Task<IQueryable<Genre>> GetAllAsync();
     }
 }

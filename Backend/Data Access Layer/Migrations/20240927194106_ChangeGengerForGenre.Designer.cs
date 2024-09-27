@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data_Access_Layer.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240720193805_AddRefreshTokenRelationship")]
-    partial class AddRefreshTokenRelationship
+    [Migration("20240927194106_ChangeGengerForGenre")]
+    partial class ChangeGengerForGenre
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,36 @@ namespace Data_Access_Layer.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("GenreMovie", b =>
+                {
+                    b.Property<string>("GenresGenreId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("MoviesMovieId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("GenresGenreId", "MoviesMovieId");
+
+                    b.HasIndex("MoviesMovieId");
+
+                    b.ToTable("GenreMovie");
+                });
+
+            modelBuilder.Entity("KeywordMovie", b =>
+                {
+                    b.Property<string>("KeywordsKeywordId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("MoviesMovieId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("KeywordsKeywordId", "MoviesMovieId");
+
+                    b.HasIndex("MoviesMovieId");
+
+                    b.ToTable("KeywordMovie");
+                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -234,11 +264,8 @@ namespace Data_Access_Layer.Migrations
 
             modelBuilder.Entity("Models.Comment", b =>
                 {
-                    b.Property<int>("CommentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CommentId"));
+                    b.Property<string>("CommentId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CommentDate")
                         .HasColumnType("datetime2");
@@ -246,13 +273,11 @@ namespace Data_Access_Layer.Migrations
                     b.Property<string>("CommentText")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("MovieId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("MoviesMovieId")
+                    b.Property<string>("MovieId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("Qualification")
+                    b.Property<int?>("Qualification")
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
@@ -261,28 +286,59 @@ namespace Data_Access_Layer.Migrations
 
                     b.HasKey("CommentId");
 
-                    b.HasIndex("MoviesMovieId");
+                    b.HasIndex("MovieId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Comments");
                 });
 
-            modelBuilder.Entity("Models.Gender", b =>
+            modelBuilder.Entity("Models.Genre", b =>
                 {
-                    b.Property<string>("GenderId")
+                    b.Property<string>("GenreId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("GenderId");
+                    b.HasKey("GenreId");
 
                     b.HasIndex("Name")
                         .IsUnique()
                         .HasFilter("[Name] IS NOT NULL");
 
-                    b.ToTable("Genders");
+                    b.ToTable("Genres");
+                });
+
+            modelBuilder.Entity("Models.InteractionType", b =>
+                {
+                    b.Property<string>("InteractionTypeId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("InteractionTypeId");
+
+                    b.ToTable("InteractionTypes");
+                });
+
+            modelBuilder.Entity("Models.Keyword", b =>
+                {
+                    b.Property<string>("KeywordId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool?>("IsActivate")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("KeywordId");
+
+                    b.ToTable("Keywords");
                 });
 
             modelBuilder.Entity("Models.Movie", b =>
@@ -290,43 +346,65 @@ namespace Data_Access_Layer.Migrations
                     b.Property<string>("MovieId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("BackdropPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("Budget")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Director")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("Duration")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Duration")
+                    b.Property<string>("ImdbId")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GenderId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Poster")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ReleaseDate")
-                        .IsRequired()
+                    b.Property<DateTime?>("ReleaseDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("Revenue")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Tagline")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("MovieId");
+                    b.Property<decimal?>("VoteAverage")
+                        .HasColumnType("decimal(18,2)");
 
-                    b.HasIndex("GenderId");
+                    b.Property<int?>("VoteCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("MovieId");
 
                     b.ToTable("Movies");
                 });
 
+            modelBuilder.Entity("Models.MovieLanguage", b =>
+                {
+                    b.Property<string>("MovieLanguageId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("MovieLanguageId");
+
+                    b.ToTable("MovieLanguages");
+                });
+
             modelBuilder.Entity("Models.RefreshToken", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
@@ -337,7 +415,7 @@ namespace Data_Access_Layer.Migrations
                     b.Property<DateTime?>("Revoked")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Token")
+                    b.Property<string>("TokenHash")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -350,6 +428,87 @@ namespace Data_Access_Layer.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RefreshTokens");
+                });
+
+            modelBuilder.Entity("Models.UserInteraction", b =>
+                {
+                    b.Property<string>("UserInteractionId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CommentId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("InteractionTypeId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("MovieId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("UserInteractionId");
+
+                    b.HasIndex("CommentId");
+
+                    b.HasIndex("InteractionTypeId");
+
+                    b.HasIndex("MovieId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserInteractions");
+                });
+
+            modelBuilder.Entity("MovieMovieLanguage", b =>
+                {
+                    b.Property<string>("MovieLanguagesMovieLanguageId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("MoviesMovieId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("MovieLanguagesMovieLanguageId", "MoviesMovieId");
+
+                    b.HasIndex("MoviesMovieId");
+
+                    b.ToTable("MovieMovieLanguage");
+                });
+
+            modelBuilder.Entity("GenreMovie", b =>
+                {
+                    b.HasOne("Models.Genre", null)
+                        .WithMany()
+                        .HasForeignKey("GenresGenreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Models.Movie", null)
+                        .WithMany()
+                        .HasForeignKey("MoviesMovieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("KeywordMovie", b =>
+                {
+                    b.HasOne("Models.Keyword", null)
+                        .WithMany()
+                        .HasForeignKey("KeywordsKeywordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Models.Movie", null)
+                        .WithMany()
+                        .HasForeignKey("MoviesMovieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -407,7 +566,9 @@ namespace Data_Access_Layer.Migrations
                 {
                     b.HasOne("Models.Movie", "Movies")
                         .WithMany("Comments")
-                        .HasForeignKey("MoviesMovieId");
+                        .HasForeignKey("MovieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Models.ApplicationUser", "User")
                         .WithMany("Comments")
@@ -418,17 +579,6 @@ namespace Data_Access_Layer.Migrations
                     b.Navigation("Movies");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Models.Movie", b =>
-                {
-                    b.HasOne("Models.Gender", "Gender")
-                        .WithMany("Movies")
-                        .HasForeignKey("GenderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Gender");
                 });
 
             modelBuilder.Entity("Models.RefreshToken", b =>
@@ -442,21 +592,73 @@ namespace Data_Access_Layer.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Models.UserInteraction", b =>
+                {
+                    b.HasOne("Models.Comment", "Comment")
+                        .WithMany()
+                        .HasForeignKey("CommentId");
+
+                    b.HasOne("Models.InteractionType", "InteractionType")
+                        .WithMany("UserInteractions")
+                        .HasForeignKey("InteractionTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Models.Movie", "Movie")
+                        .WithMany("UserInteractions")
+                        .HasForeignKey("MovieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Models.ApplicationUser", "User")
+                        .WithMany("UserInteractions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Comment");
+
+                    b.Navigation("InteractionType");
+
+                    b.Navigation("Movie");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MovieMovieLanguage", b =>
+                {
+                    b.HasOne("Models.MovieLanguage", null)
+                        .WithMany()
+                        .HasForeignKey("MovieLanguagesMovieLanguageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Models.Movie", null)
+                        .WithMany()
+                        .HasForeignKey("MoviesMovieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Models.ApplicationUser", b =>
                 {
                     b.Navigation("Comments");
 
                     b.Navigation("RefreshTokens");
+
+                    b.Navigation("UserInteractions");
                 });
 
-            modelBuilder.Entity("Models.Gender", b =>
+            modelBuilder.Entity("Models.InteractionType", b =>
                 {
-                    b.Navigation("Movies");
+                    b.Navigation("UserInteractions");
                 });
 
             modelBuilder.Entity("Models.Movie", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("UserInteractions");
                 });
 #pragma warning restore 612, 618
         }

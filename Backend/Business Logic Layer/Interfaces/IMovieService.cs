@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using DTO;
     using Models;
     using Models.DTO;
 
@@ -14,12 +15,14 @@
 
         Task<Movie> CreateMovieAsync(Movie movie);
 
-        Task<Movie> GetMovieByIdAsync(string id);
+        Task<MovieDetailDTO> GetMovieByIdAsync(string id);
 
         Task<Movie> UpdateMovieAsync(Movie movie);
 
         Task<Movie> DeleteMovieAsync(int id);
 
-        Task<List<Movie>> SearchMoviesAsync(string searchTerm);
+        Task<PagedResultDTO<MovieBasicInfoDTO>> SearchMoviesAsync(string searchTerm, int pageNumber, int pageSize);
+
+        Task<PagedResultDTO<MovieBasicInfoDTO>> GetFilteredMoviesAsync(string genreId, string keyword, DateTime? releaseDate, int pageNumber, int pageSize);
     }
 }

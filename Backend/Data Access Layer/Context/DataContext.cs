@@ -21,17 +21,23 @@
 
         public DbSet<Comment> Comments { get; set; }
 
-        public DbSet<Gender> Genders { get; set; }
+        public DbSet<Genre> Genres { get; set; }
 
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
-        public DbSet<MovieGender> MovieGenders { get; set; }
+        public DbSet<MovieLanguage> MovieLanguages { get; set; }
+
+        public DbSet<Keyword> Keywords { get; set; }
+
+        public DbSet<UserInteraction> UserInteractions { get; set; }
+
+        public DbSet<InteractionType> InteractionTypes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Gender>()
+            modelBuilder.Entity<Genre>()
                 .HasIndex(g => g.Name)
                 .IsUnique();
 
@@ -39,9 +45,6 @@
                 .HasOne(rt => rt.User)
                 .WithMany(u => u.RefreshTokens)
                 .HasForeignKey(rt => rt.UserId);
-
-            modelBuilder.Entity<MovieGender>()
-                .HasKey(mg => new { mg.MovieId, mg.GenderId });
         }
     }
 }

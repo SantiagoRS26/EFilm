@@ -25,7 +25,7 @@
             return await this.commentRepository.CreateAsync(newComment);
         }
 
-        public async Task<bool> DeleteCommentAsync(int id, string userId)
+        public async Task<bool> DeleteCommentAsync(string id, string userId)
         {
             var comment = await this.commentRepository.GetByIdAsync(id.ToString());
 
@@ -37,7 +37,7 @@
             return await this.commentRepository.DeleteAsync(id);
         }
 
-        public async Task<Comment> GetCommentByIdAsync(int id)
+        public async Task<Comment> GetCommentByIdAsync(string id)
         {
             return await this.commentRepository.GetByIdAsync(id.ToString());
         }
@@ -57,7 +57,7 @@
             return await this.commentRepository.UpdateAsync(existingComment);
         }
 
-        public async Task<IEnumerable<Comment>> GetCommentsByMovieIdAsync(int movieId)
+        public async Task<IEnumerable<Comment>> GetCommentsByMovieIdAsync(string movieId)
         {
             var comments = await this.commentRepository.GetAll();
             return comments.Where(c => c.MovieId == movieId).ToList();

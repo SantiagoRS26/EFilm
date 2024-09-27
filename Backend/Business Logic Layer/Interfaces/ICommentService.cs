@@ -11,12 +11,12 @@
     {
         Task<Comment> CreateCommentAsync(Comment newComment, string userId);
 
-        Task<bool> DeleteCommentAsync(int id, string userId);
+        Task<bool> DeleteCommentAsync(string id, string userId);
 
-        Task<Comment> GetCommentByIdAsync(int id);
+        Task<Comment> GetCommentByIdAsync(string id);
 
         Task<Comment> UpdateCommentAsync(Comment updatedComment, string userId);
 
-        Task<IEnumerable<Comment>> GetCommentsByMovieIdAsync(int movieId);
+        Task<IEnumerable<Comment>> GetCommentsByMovieIdAsync(string movieId);
     }
 }

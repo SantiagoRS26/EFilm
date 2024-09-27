@@ -1,60 +1,85 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
-import { GetMoviesUseCase } from "@/useCases/Movie/getMovies.useCase";
+import { MovieDetail } from "@/domain/Movie/MovieDetail";
 import { MovieRepository } from "@/infrastructure/api/MovieRepository";
-import { Movie } from "@/domain/Movie/Movie";
-import { MovieCard } from "@/shared/components/MovieCard/MovieCard.component";
 import { MovieCardDetailed } from "@/shared/components/MovieCard/MovieCardDetailed.component";
-import { formatDate } from "@/shared/utils/FormatDate";
+import { Genre } from "@/domain/Movie/Genre";
+
+import { GenreRepository } from "@/infrastructure/api/GenreRepository";
+import { GetGenresUseCase } from "@/useCases/Genre/getGenres.useCase";
+import { GenreSection } from "@/shared/components/GenreSection";
 
 export const MovieList: React.FC = () => {
-    const [movies, setMovies] = useState<Movie[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
-    
-    useEffect(() => {
-        const movieRepository = new MovieRepository();
-        const getMoviesUseCase = new GetMoviesUseCase(movieRepository);
+  const [genres, setGenres] = useState<Genre[]>([]);
+  const [loadingGenres, setLoadingGenres] = useState(true);
+  const [selectedMovie, setSelectedMovie] = useState<MovieDetail | null>(null);
+  const [loadingMovieDetail, setLoadingMovieDetail] = useState(false);
+  const [errorGenres, setErrorGenres] = useState<string | null>(null);
+  const [errorMovieDetail, setErrorMovieDetail] = useState<string | null>(null);
 
-        getMoviesUseCase.execute().then((movies) => {
-            setMovies(movies);
-            setLoading(false);
-        }).catch((error) => {
-            console.error(error);
-            setLoading(false);
-        });
-    }, []);
+  useEffect(() => {
+    const genreRepository = new GenreRepository();
+    const getGenresUseCase = new GetGenresUseCase(genreRepository);
 
-    const handleCardClick = (movie: Movie) => {
-        setSelectedMovie(movie);
+    getGenresUseCase.execute().then((genres) => {
+      setGenres(genres);
+      setLoadingGenres(false);
+    }).catch((error) => {
+      console.error(error);
+      setErrorGenres('No se pudieron cargar los géneros.');
+      setLoadingGenres(false);
+    });
+  }, []);
+
+  const handleMovieSelect = async (movieId: string) => {
+    setLoadingMovieDetail(true);
+    setErrorMovieDetail(null);
+    try {
+      const movieRepository = new MovieRepository();
+      const movieDetail = await movieRepository.getMovieById(movieId);
+      setSelectedMovie(movieDetail);
+    } catch (error) {
+      console.error(error);
+      setErrorMovieDetail('No se pudieron cargar los detalles de la película.');
+    } finally {
+      setLoadingMovieDetail(false);
     }
+  };
 
-    if (loading) {
-        return <p>Cargando peliculas</p>;
-    }
-    return (
+  if (loadingGenres) {
+    return <p>Cargando géneros y películas...</p>;
+  }
+
+  if (errorGenres) {
+    return <p className="text-red-500">{errorGenres}</p>;
+  }
+
+  return (
+    <div>
+      <main>
+        <h1>Películas</h1>
+        {selectedMovie && (
+          <div className="p-4 mb-4 bg-white shadow-lg rounded-xl text-black">
+            {loadingMovieDetail ? (
+              <p>Cargando detalles de la película...</p>
+            ) : errorMovieDetail ? (
+              <p className="text-red-500">{errorMovieDetail}</p>
+            ) : (
+              <MovieCardDetailed movie={selectedMovie} />
+            )}
+          </div>
+        )}
         <div>
-            <main>
-                <h1>Películas</h1>
-                {selectedMovie && (
-                    <div className="p-4 mb-4 bg-white shadow-lg rounded-xl text-black">
-                        <h2 className="text-2xl font-bold">{selectedMovie.title}</h2>
-                        <p>{selectedMovie.description}</p>
-                        <p>Fecha de salida: {formatDate(selectedMovie.releaseDate)}</p>
-                    </div>
-                )}
-                <div className="movie-list flex gap-16 overflow-x-auto p-14">
-                    {movies.map((movie, index) => (
-                        <MovieCard 
-                            key={index} 
-                            movie={movie} 
-                            onClick={() => handleCardClick(movie)} 
-                            isSelected={selectedMovie?.MovieId === movie.MovieId} 
-                        />
-                    ))}
-                </div>
-            </main>
+          {genres.map((genre) => (
+            <GenreSection 
+              key={genre.genreId}
+              genre={genre} 
+              onMovieSelect={handleMovieSelect} 
+            />
+          ))}
         </div>
-    )
-}
+      </main>
+    </div>
+  );
+};

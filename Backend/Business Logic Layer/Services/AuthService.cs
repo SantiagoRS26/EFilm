@@ -225,6 +225,7 @@
 
             var refreshTokenEntity = new RefreshToken
             {
+                Id = Guid.NewGuid().ToString(),
                 TokenHash = tokenHash,
                 UserId = user.Id,
                 Expires = DateTime.UtcNow.AddDays(7),

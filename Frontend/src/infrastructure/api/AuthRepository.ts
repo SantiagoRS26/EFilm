@@ -16,9 +16,10 @@ export class AuthRepository implements IAuthRepository {
 
   async checkAuth(): Promise<boolean> {
     try {
+      console.log("checkAuth");
       await httpClient.get('/auth/check');
       return true;
-    } catch {
+    } catch (error) {
       return false;
     }
   }

@@ -21,7 +21,7 @@ namespace EFilm.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetCommentById(int id)
+        public async Task<IActionResult> GetCommentById(string id)
         {
             var comment = await this.commentService.GetCommentByIdAsync(id);
             if (comment == null)
@@ -48,7 +48,7 @@ namespace EFilm.Controllers
 
         [HttpPut("{id}")]
         [Authorize]
-        public async Task<IActionResult> UpdateComment(int id, [FromBody] Comment updatedComment)
+        public async Task<IActionResult> UpdateComment(string id, [FromBody] Comment updatedComment)
         {
             if (id != updatedComment.CommentId)
             {
@@ -73,7 +73,7 @@ namespace EFilm.Controllers
 
         [HttpDelete("{id}")]
         [Authorize]
-        public async Task<IActionResult> DeleteComment(int id)
+        public async Task<IActionResult> DeleteComment(string id)
         {
             var userId = this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var result = await this.commentService.DeleteCommentAsync(id, userId);
@@ -87,7 +87,7 @@ namespace EFilm.Controllers
         }
 
         [HttpGet("movie/{movieId}")]
-        public async Task<IActionResult> GetCommentsByMovieId(int movieId)
+        public async Task<IActionResult> GetCommentsByMovieId(string movieId)
         {
             var comments = await this.commentService.GetCommentsByMovieIdAsync(movieId);
             return this.Ok(comments);

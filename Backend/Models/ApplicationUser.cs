@@ -18,5 +18,7 @@ namespace Models
         public ICollection<Comment>? Comments { get; set; }
 
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+
+        public ICollection<UserInteraction>? UserInteractions { get; set; }
     }
 }
