@@ -10,7 +10,7 @@ export class GetFilteredMoviesUseCase {
         this.movieRepository = movieRepository;
     }
 
-    async execute(filters: MovieFilters, pageNumber: number = 1, pageSize: number = 10): Promise<PagedResult<MovieBasicInfo>>{
+    async execute(filters: MovieFilters, pageNumber: number = 1, pageSize: number = 2): Promise<PagedResult<MovieBasicInfo>>{
         try {
             const pagedMovies = await this.movieRepository.getFilteredMovies(filters, pageNumber, pageSize);
             return pagedMovies;

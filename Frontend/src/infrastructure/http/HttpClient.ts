@@ -79,25 +79,32 @@ export class HttpClient {
   // Maneja la renovación del token
   private async handle401(): Promise<boolean> {
     if (this.isRefreshing) {
-      if (this.refreshPromise) {
-        return await this.refreshPromise;
-      }
-      return false;
+        if (this.refreshPromise) {
+            console.log("Waiting for ongoing token refresh...");
+            return await this.refreshPromise;
+        }
+        return false;
     }
 
     this.isRefreshing = true;
+    console.log("Refreshing token...");
     this.refreshPromise = this.refreshToken();
 
     const refreshed = await this.refreshPromise;
     this.isRefreshing = false;
     this.refreshPromise = null;
 
-    if (!refreshed && this.logoutCallback) {
-      this.logoutCallback();
+    if (refreshed) {
+        console.log("Token refreshed successfully.");
+    } else {
+        console.log("Token refresh failed. Triggering logout.");
+        if (this.logoutCallback) {
+            this.logoutCallback();
+        }
     }
 
     return refreshed;
-  }
+}
 
   // Métodos HTTP específicos
   async get<T>(url: string): Promise<T> {

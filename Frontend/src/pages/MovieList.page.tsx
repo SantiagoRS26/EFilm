@@ -1,38 +1,18 @@
+// MovieList.tsx
 'use client';
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { MovieDetail } from "@/domain/Movie/MovieDetail";
 import { MovieRepository } from "@/infrastructure/api/MovieRepository";
 import { MovieCardDetailed } from "@/shared/components/MovieCard/MovieCardDetailed.component";
-import { Genre } from "@/domain/Movie/Genre";
-
-import { GenreRepository } from "@/infrastructure/api/GenreRepository";
-import { GetGenresUseCase } from "@/useCases/Genre/getGenres.useCase";
-import { GenreSection } from "@/shared/components/GenreSection";
+import { GenreListSection } from "@/shared/components/Genre/GenreListSection";
 
 export const MovieList: React.FC = () => {
-  const [genres, setGenres] = useState<Genre[]>([]);
-  const [loadingGenres, setLoadingGenres] = useState(true);
   const [selectedMovie, setSelectedMovie] = useState<MovieDetail | null>(null);
   const [loadingMovieDetail, setLoadingMovieDetail] = useState(false);
-  const [errorGenres, setErrorGenres] = useState<string | null>(null);
   const [errorMovieDetail, setErrorMovieDetail] = useState<string | null>(null);
 
-  useEffect(() => {
-    const genreRepository = new GenreRepository();
-    const getGenresUseCase = new GetGenresUseCase(genreRepository);
-
-    getGenresUseCase.execute().then((genres) => {
-      setGenres(genres);
-      setLoadingGenres(false);
-    }).catch((error) => {
-      console.error(error);
-      setErrorGenres('No se pudieron cargar los géneros.');
-      setLoadingGenres(false);
-    });
-  }, []);
-
-  const handleMovieSelect = async (movieId: string) => {
+  const handleMovieSelect = useCallback(async (movieId: string) => {
     setLoadingMovieDetail(true);
     setErrorMovieDetail(null);
     try {
@@ -45,40 +25,15 @@ export const MovieList: React.FC = () => {
     } finally {
       setLoadingMovieDetail(false);
     }
-  };
-
-  if (loadingGenres) {
-    return <p>Cargando géneros y películas...</p>;
-  }
-
-  if (errorGenres) {
-    return <p className="text-red-500">{errorGenres}</p>;
-  }
+  }, []);
 
   return (
-    <div>
-      <main>
-        <h1>Películas</h1>
-        {selectedMovie && (
-          <div className="p-4 mb-4 bg-white shadow-lg rounded-xl text-black">
-            {loadingMovieDetail ? (
-              <p>Cargando detalles de la película...</p>
-            ) : errorMovieDetail ? (
-              <p className="text-red-500">{errorMovieDetail}</p>
-            ) : (
-              <MovieCardDetailed movie={selectedMovie} />
-            )}
-          </div>
-        )}
-        <div>
-          {genres.map((genre) => (
-            <GenreSection 
-              key={genre.genreId}
-              genre={genre} 
-              onMovieSelect={handleMovieSelect} 
-            />
-          ))}
-        </div>
+    <div className="bg-gray-900 min-h-screen text-white">
+      <header className="fixed top-0 left-0 right-0 bg-black bg-opacity-75 p-4 z-50">
+        <h1 className="text-3xl font-bold">Mi Netflix Clone</h1>
+      </header>
+      <main className="pt-20 px-4">
+        <GenreListSection onMovieSelect={handleMovieSelect} />
       </main>
     </div>
   );

@@ -22,6 +22,7 @@ export class MovieRepository implements IMovieRepository {
   async getMovieById(id: string): Promise<MovieDetail | null> {
     try {
       const movieData = await httpClient.get<MovieDetailDTO>(`/Movie/${id}`);
+      console.log('movieData: ', movieData);
       return movieData ? new MovieDetail(movieData) : null;
     } catch (error) {
       console.error(`Error al obtener la película con ID ${id}:`, error);

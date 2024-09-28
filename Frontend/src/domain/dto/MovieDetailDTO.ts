@@ -17,7 +17,7 @@ export interface MovieDetailDTO {
   imdbId: string;
   backdropPath: string | null;
   tagline: string;
-  genders: GenreDTO[];
+  genres: GenreDTO[];
   keywords: KeywordDTO[];
   comments: CommentDTO[];
   movieLanguages: MovieLanguageDTO[];
