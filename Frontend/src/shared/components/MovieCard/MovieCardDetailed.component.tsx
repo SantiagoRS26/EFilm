@@ -9,7 +9,7 @@ export const MovieCardDetailed: React.FC<MovieCardDetailedProps> = ({ movie }) =
   return (
     <div className="flex flex-col md:flex-row bg-gray-800 rounded-lg overflow-hidden shadow-lg">
       <img 
-        src={movie.poster || '/default-poster.jpg'} 
+        src={movie.poster || "/images/default-poster.png"}
         alt={`Poster de ${movie.title}`} 
         className="w-full md:w-1/3 h-auto object-cover"
         loading="lazy"
@@ -19,7 +19,7 @@ export const MovieCardDetailed: React.FC<MovieCardDetailedProps> = ({ movie }) =
           <h2 className="text-3xl font-bold text-white mb-4">{movie.title}</h2>
           <p className="text-gray-300 mb-4">{movie.description}</p>
           <div className="flex flex-wrap gap-2 mb-4">
-            {movie.genders.map(genre => (
+            {movie.genres.map(genre => (
               <span 
                 key={genre.genreId} 
                 className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs"

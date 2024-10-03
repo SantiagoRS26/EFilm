@@ -51,20 +51,10 @@
         {
             var query = this.movieRepository.GetMoviesQuery();
 
-            if (!string.IsNullOrEmpty(genreId))
-            {
-                query = query.Where(m => m.Genres.Any(g => g.GenreId == genreId));
-            }
-
-            if(!string.IsNullOrEmpty(keyword))
-            {
-                query = query.Where(m => m.Title.Contains(keyword) || m.Description.Contains(keyword));
-            }
-
-            if (releaseDate.HasValue)
-            {
-                query = query.Where(m => m.ReleaseDate == releaseDate);
-            }
+            query = query
+                        .Where(m => string.IsNullOrEmpty(genreId) || m.Genres.Any(g => g.GenreId == genreId))
+                        .Where(m => string.IsNullOrEmpty(keyword) || m.Title.Contains(keyword) || m.Description.Contains(keyword))
+                        .Where(m => !releaseDate.HasValue || m.ReleaseDate == releaseDate);
 
             var totalRecords = await query.CountAsync();
 
@@ -101,6 +91,7 @@
             }
 
             var baseImageUrl = "https://image.tmdb.org/t/p/w500";
+            var backdropUrl = "https://image.tmdb.org/t/p/original";
 
             var movieDto = new MovieDetailDTO
             {
@@ -115,7 +106,7 @@
                 Revenue = movie.Revenue,
                 Budget = movie.Budget,
                 ImdbId = movie.ImdbId,
-                BackdropPath = movie.BackdropPath,
+                BackdropPath = string.IsNullOrEmpty(movie.BackdropPath) ? null : $"{backdropUrl}{movie.BackdropPath}",
                 Tagline = movie.Tagline,
                 Genres = movie.Genres?.Select(g => new GenreDTO
                 {
@@ -213,6 +204,8 @@
 
             var totalRecords = await query.CountAsync();
 
+            var baseImageUrl = "https://image.tmdb.org/t/p/w500";
+
             var movies = await query
                 .OrderByDescending(m => m.Revenue)
                 .Skip((pageNumber - 1) * pageSize)
@@ -221,7 +214,7 @@
                 {
                     MovieId = m.MovieId,
                     Title = m.Title,
-                    PosterUrl = m.Poster,
+                    PosterUrl = string.IsNullOrEmpty(m.Poster) ? null : $"{baseImageUrl}{m.Poster}",
                     ReleaseDate = m.ReleaseDate,
                 }).ToListAsync();
 

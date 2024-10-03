@@ -7,4 +7,5 @@ export interface IMovieRepository {
     /* getAllMovies(): Promise<Movie[]>; */
     getFilteredMovies(filters: MovieFilters, pageNumber?: number, pageSize?: number): Promise<PagedResult<MovieBasicInfo>>;
     getMovieById(id: string): Promise<MovieDetail | null>;
+    searchMovies(query: string, pageNumber?: number, pageSize?: number): Promise<PagedResult<MovieBasicInfo>>
 }

@@ -22,7 +22,7 @@ export class HttpClient {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Enviar cookies
+        credentials: 'include',
       });
 
       if (response.ok) {

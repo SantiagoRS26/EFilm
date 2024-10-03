@@ -30,7 +30,7 @@ export class MovieRepository implements IMovieRepository {
     }
   }
 
-  async getFilteredMovies(filters: MovieFilters, pageNumber: number = 1, pageSize: number = 10): Promise<PagedResult<MovieBasicInfo>> {
+  async getFilteredMovies(filters: MovieFilters, pageNumber: number = 1, pageSize: number = 4): Promise<PagedResult<MovieBasicInfo>> {
     try {
       const queryParams = new URLSearchParams();
 
@@ -55,5 +55,26 @@ export class MovieRepository implements IMovieRepository {
       throw error;
     }
   }
+  
+  async searchMovies(query: string, pageNumber: number = 1, pageSize: number = 10): Promise<PagedResult<MovieBasicInfo>> {
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append('query', query);
+      queryParams.append('pageNumber', pageNumber.toString());
+      queryParams.append('pageSize', pageSize.toString());
 
+      const response = await httpClient.get<PagedResultDTO<MovieBasicInfoDTO>>(`/Movie?${queryParams.toString()}`);
+
+      const pagedResult = new PagedResult<MovieBasicInfo>({
+        ...response,
+        items: response.items.map(movieData => new MovieBasicInfo(movieData)),
+      });
+
+      return pagedResult;
+      
+    } catch (error) {
+      console.error('Error al buscar películas:', error);
+      throw error;
+    }
+  }
 }

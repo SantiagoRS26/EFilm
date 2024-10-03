@@ -16,12 +16,12 @@ interface MovieCardProps {
     
     return (
       <div 
-        className="relative cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:shadow-2xl"
+        className="relative cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl hover:rotate-[0.7deg]"
         onClick={handleClick}
       >
         <img 
-          src={movie.posterUrl || '/default-poster.jpg'} 
-          alt={`Poster de ${movie.title}`} 
+          src={movie.posterUrl || '/images/default-poster.png'} 
+          alt={`Poster de ${movie.title}`}
           className="w-full h-auto rounded-md object-cover"
           loading="lazy"
         />
