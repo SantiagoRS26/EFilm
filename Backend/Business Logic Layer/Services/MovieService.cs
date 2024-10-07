@@ -134,63 +134,6 @@
             };
 
             return movieDto;
-
-            /* Movie movie = await this.movieRepository.GetByIdAsync(id);
-
-            if (movie != null)
-            {
-                return movie;
-            }
-
-            ExternalMovieDTO externalMovie = await this.externalMovieService.GetMovieByIdAsync(id.ToString());
-
-            if (externalMovie == null)
-            {
-                return null;
-            }
-
-            var newMovie = new Movie
-            {
-                MovieId = externalMovie.imdbID,
-                Title = externalMovie.Title,
-                Description = externalMovie.Plot,
-                Director = externalMovie.Director,
-                Poster = externalMovie.Poster,
-                ReleaseDate = externalMovie.Year,
-                Duration = externalMovie.Runtime,
-            };
-
-            var genres = externalMovie.Genre.Split(", ")
-                                                .Select(g => g.Trim())
-                                                .ToList();
-            foreach (var genreName in genres)
-            {
-                var existingGenre = await this.GenreService.GetGenreByNameAsync(genreName);
-
-                Genre Genre;
-
-                if (existingGenre == null)
-                {
-                    Genre = existingGenre;
-                }
-                else
-                {
-                    Genre = new Genre
-                    {
-                        GenreId = Guid.NewGuid().ToString(),
-                        Name = genreName,
-                    };
-                }
-
-                newMovie.MovieGenres.Add(new MovieGenre
-                {
-                    Movie = newMovie,
-                    Genre = Genre,
-                });
-            }
-
-            return newMovie;
-            */
         }
 
         public async Task<PagedResultDTO<MovieBasicInfoDTO>> SearchMoviesAsync(string searchTerm, int pageNumber, int pageSize)

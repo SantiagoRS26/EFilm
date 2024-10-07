@@ -60,9 +60,7 @@
 
                 if (!string.IsNullOrEmpty(searchTerm))
                 {
-                    query = query.Where(m => EF.Functions.Contains(m.Title, searchTerm) ||
-                                     EF.Functions.Contains(m.Description, searchTerm) ||
-                                     EF.Functions.Contains(m.Tagline, searchTerm));
+                    query = query.Where(m => EF.Functions.Contains(m.Title, searchTerm));
                 }
 
                 return query;

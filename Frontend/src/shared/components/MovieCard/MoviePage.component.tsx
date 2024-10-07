@@ -121,7 +121,7 @@ export const MoviePage: React.FC<MoviePageProps> = React.memo(({ movieId }) => {
 					</div>
 
 					{/* Sinopsis a la derecha, se ajusta en pantallas pequeñas */}
-					<div className="text-white text-left max-w-full sm:max-w-md mt-4 sm:mt-0">
+					<div className="text-white text-left max-w-full sm:max-w-md mt-4 sm:mt-0 flex flex-col justify-center">
 						<h2 className="text-xl sm:text-2xl font-semibold mb-2 tracking-wide uppercase">
 							STORYLINE
 						</h2>
